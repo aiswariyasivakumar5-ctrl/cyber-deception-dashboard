@@ -4,67 +4,57 @@ import os
 import pandas as pd
 import time
 
-# ---------------- Page Config ----------------
 st.set_page_config(
     page_title="Cyber Deception Live Dashboard",
     layout="wide"
 )
 
-# ---------------- Title ----------------
 st.title("🛡️ Cyber Deception Live Dashboard")
 
-# ---------------- Sidebar Controls ----------------
+# ---------------- Sidebar ----------------
 st.sidebar.header("⚙️ Controls")
 auto_refresh = st.sidebar.checkbox("Live Update", value=True)
 
-if auto_refresh:
-    time.sleep(2)
-    st.rerun()
-
-# ---------------- Load Metrics ----------------
-if not os.path.exists("metrics.json"):
+# ---------------- Load Metrics FIRST ----------------
+if not os.path.isfile("metrics.json"):
     st.info("Waiting for metrics... Run main.py")
-    st.stop()
-
-with open("metrics.json") as f:
-    data = json.load(f)
-
-# ---------------- Prepare Data ----------------
-if "events" in data:
-    events = data["events"]
 else:
-    # Demo fallback (Cloud-safe)
-    events = [
-        {"time": "10:01", "outcome": "TRAPPED", "reward": 3},
-        {"time": "10:03", "outcome": "ESCAPED", "reward": -1},
-        {"time": "10:05", "outcome": "TRAPPED", "reward": 4},
-        {"time": "10:07", "outcome": "BLOCKED", "reward": 1},
-        {"time": "10:09", "outcome": "TRAPPED", "reward": 5}
-    ]
+    with open("metrics.json") as f:
+        data = json.load(f)
 
-df = pd.DataFrame(events)
+    # Prepare data
+    if "events" in data:
+        events = data["events"]
+    else:
+        events = [
+            {"time": "10:01", "outcome": "TRAPPED", "reward": 3},
+            {"time": "10:03", "outcome": "ESCAPED", "reward": -1},
+            {"time": "10:05", "outcome": "TRAPPED", "reward": 4},
+            {"time": "10:07", "outcome": "BLOCKED", "reward": 1},
+            {"time": "10:09", "outcome": "TRAPPED", "reward": 5}
+        ]
 
-# ---------------- Confusion Score ----------------
-st.subheader("🧠 Attacker Confusion Score")
+    df = pd.DataFrame(events)
 
-honeypot_hits = df[df["outcome"].str.contains("TRAPPED")].shape[0]
-escapes = df[df["outcome"].str.contains("ESCAPED")].shape[0]
+    # ---- Confusion Score ----
+    st.subheader("🧠 Attacker Confusion Score")
 
-confusion_score = honeypot_hits - escapes
+    honeypot_hits = df[df["outcome"].str.contains("TRAPPED")].shape[0]
+    escapes = df[df["outcome"].str.contains("ESCAPED")].shape[0]
 
-st.metric(
-    label="Confusion Score",
-    value=confusion_score
-)
+    st.metric("Confusion Score", honeypot_hits - escapes)
 
-# ---------------- Outcome Distribution ----------------
-st.subheader("📊 Attack Outcome Distribution")
-st.bar_chart(df["outcome"].value_counts())
+    # ---- Charts ----
+    st.subheader("📊 Attack Outcome Distribution")
+    st.bar_chart(df["outcome"].value_counts())
 
-# ---------------- Reward Trend ----------------
-st.subheader("📈 Reward Trend Over Time")
-st.line_chart(df["reward"])
+    st.subheader("📈 Reward Trend")
+    st.line_chart(df["reward"])
 
-# ---------------- Attack Timeline ----------------
-st.subheader("⏱️ Attack Timeline")
-st.table(df[["time", "outcome", "reward"]])
+    st.subheader("⏱️ Attack Timeline")
+    st.table(df[["time", "outcome", "reward"]])
+
+# ---------------- Auto Refresh LAST ----------------
+if auto_refresh:
+    time.sleep(3)
+    st.rerun()
