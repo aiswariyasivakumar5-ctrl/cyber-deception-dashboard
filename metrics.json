@@ -1,0 +1,9 @@
+{
+  "events": [
+    { "time": "10:01", "outcome": "TRAPPED", "reward": 3 },
+    { "time": "10:03", "outcome": "ESCAPED", "reward": -1 },
+    { "time": "10:05", "outcome": "TRAPPED", "reward": 4 },
+    { "time": "10:07", "outcome": "BLOCKED", "reward": 1 },
+    { "time": "10:09", "outcome": "TRAPPED", "reward": 5 }
+  ]
+}
